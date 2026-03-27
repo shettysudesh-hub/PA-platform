@@ -1,0 +1,18 @@
+{
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f CLAUDE.md ] && cat CLAUDE.md | jq -Rs '{\"hookSpecificOutput\": {\"hookEventName\": \"SessionStart\", \"additionalContext\": (\"=== Project rules from CLAUDE.md — read and follow these exactly ===\\n\" + .)}}' || true",
+            "statusMessage": "Loading CLAUDE.md rules..."
+          }
+        ]
+      }
+    ]
+  }
+}

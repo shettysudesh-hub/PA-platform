@@ -1,0 +1,97 @@
+/* Header — 47px as per Figma */
+.app-header {
+  height: 47px;
+}
+
+.app-header__logo {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.app-header__nav-item {
+  white-space: nowrap;
+}
+
+.app-header__nav-item--active {
+  color: var(--primary);
+}
+
+.app-header__search {
+  width: 333px;
+  flex-shrink: 0;
+}
+
+.app-header__icon-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.app-header__icon-btn:hover {
+  background: var(--secondary-lighter);
+}
+
+.app-header__badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  font-size: 9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+}
+
+/* Page wrapper — used by Page component */
+.app-page {
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--spacing-40);
+}
+
+/* Sidebar layout — used per-page */
+.app-sidebar-layout {
+  display: flex;
+  height: 100%;
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--secondary-light);
+  overflow-y: auto;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
+  background: var(--white);
+}
+
+.app-sidebar--expanded {
+  width: 240px;
+}
+
+.app-sidebar--collapsed {
+  width: 56px;
+}
+
+.app-sidebar__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-10);
+  cursor: pointer;
+  border-top: 1px solid var(--secondary-light);
+  margin-top: auto;
+}
+
+.app-sidebar__toggle:hover {
+  background: var(--secondary-lighter);
+}
+
+.app-sidebar-layout__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-20) 0;
+  background: var(--white);
+}
