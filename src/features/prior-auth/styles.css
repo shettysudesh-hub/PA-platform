@@ -1,0 +1,689 @@
+/* ─────────────────────────────────────────────
+   Prior Auth — Layout & Component Styles
+   MDS components handle theming via tokens.
+   Custom CSS only for layout, animations,
+   and novel patterns not in MDS.
+   ───────────────────────────────────────────── */
+
+/* ── FEED PAGE ─────────────────────────────── */
+.feed-page {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.feed-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-80) var(--spacing-60);
+}
+
+.feed-col {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── FEED INTRO ────────────────────────────── */
+.feed-intro {
+  padding: 0 0 8px 0;
+}
+
+/* ── AI MESSAGE BUBBLE ─────────────────────── */
+.ai-message {
+  margin-bottom: var(--spacing-40);
+  animation: feedItemIn 0.25s ease-out both;
+}
+
+@keyframes feedItemIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Section label */
+.feed-section-label {
+  margin-bottom: var(--spacing-30);
+}
+
+/* Divider between thinking and content */
+.feed-divider {
+  height: 1px;
+  background: var(--secondary-light);
+  margin: 16px 0;
+}
+
+/* Content reveal animation */
+.feed-content-reveal {
+  animation: contentFadeIn 0.3s ease-out both;
+}
+
+@keyframes contentFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Collapse button bar shown at bottom of reviewed sections */
+.section-collapse-bar {
+  margin-top: var(--spacing-40);
+  padding-top: var(--spacing-30);
+  border-top: 1px dashed var(--secondary-light);
+}
+
+/* ── THINKING STEPS ────────────────────────── */
+.thinking-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.thinking-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 1px 0;
+}
+
+.thinking-step-icon {
+  display: flex;
+  flex-shrink: 0;
+  width: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.thinking-step-icon.done {
+  color: var(--success);
+}
+
+.thinking-text {
+  color: var(--text-subtle);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.thinking-text-active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Collapsed thinking accordion */
+.thinking-done {
+  margin-bottom: 0;
+}
+
+.thinking-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.thinking-toggle:hover {
+  color: var(--text);
+}
+
+.thinking-check-icon {
+  display: flex;
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.thinking-toggle-label {
+  font-weight: 500;
+}
+
+.thinking-chevron {
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--text-subtle);
+}
+
+.thinking-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── COLLAPSED SECTION BAR ─────────────────── */
+.collapsed-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  margin-bottom: 8px;
+  background: var(--white);
+  border: 1px solid var(--secondary-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  animation: feedItemIn 0.2s ease-out both;
+}
+
+.collapsed-section:hover {
+  background: var(--secondary-lightest);
+  border-color: var(--secondary);
+}
+
+.collapsed-section:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.collapsed-check {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.collapsed-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.collapsed-line1 {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapsed-step-name {
+  font-weight: 600;
+}
+
+.collapsed-sep {
+  color: var(--text-subtle);
+}
+
+.collapsed-line2 {
+  font-size: 12px;
+  color: var(--text-subtle);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapsed-expand-icon {
+  font-size: 11px;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+}
+
+/* ── PACKET SIDE PANEL — inline flex sibling ── */
+.packet-panel {
+  width: 440px;
+  min-width: 440px;
+  flex-shrink: 0;
+  background: var(--white);
+  border-left: 1px solid var(--secondary-light);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: panelSlideIn 0.25s ease-out both;
+}
+
+@keyframes panelSlideIn {
+  from { width: 0; min-width: 0; opacity: 0; }
+  to   { width: 440px; min-width: 440px; opacity: 1; }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-40) 20px;
+  border-bottom: 1px solid var(--secondary-light);
+  flex-shrink: 0;
+}
+
+.panel-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--secondary-lightest);
+  color: var(--text-subtle);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+
+.panel-close-btn:hover {
+  background: var(--secondary-light);
+  color: var(--text);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ── Packet panel — flat key-value layout ────── */
+.packet-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.packet-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-40);
+}
+
+.packet-field-key {
+  width: 148px;
+  min-width: 148px;
+  flex-shrink: 0;
+  padding-top: 1px; /* optical align with value cap-height */
+}
+
+.packet-field-val {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-30);
+  padding: var(--spacing-40) 20px;
+  border-top: 1px solid var(--secondary-light);
+  flex-shrink: 0;
+  background: var(--white);
+}
+
+/* ── WORKLIST ────────────────────────────────── */
+.wl-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+}
+
+/* ── INSURANCE TOGGLE (simulate) ────────────── */
+.ins-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--secondary-lightest);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.ins-toggle-label {
+  font-size: 11px;
+  color: var(--text-subtle);
+  margin-right: 4px;
+  padding-left: 6px;
+}
+
+.ins-toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: var(--text-subtle);
+  cursor: pointer;
+}
+
+.ins-toggle-btn.on {
+  background: var(--white);
+  color: var(--success);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.ins-toggle-btn.on.red {
+  color: var(--alert);
+}
+
+/* ── SIMULATOR FLOATER ───────────────────────── */
+.sim-floater {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--spacing-20);
+}
+
+.sim-floater-panel {
+  background: var(--white);
+  border: 1px solid var(--secondary-light);
+  border-radius: var(--border-radius-20);
+  padding: var(--spacing-50);
+  min-width: 300px;
+  max-width: 380px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10);
+  animation: feedItemIn 0.18s ease-out both;
+}
+
+.sim-floater-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px 6px 10px;
+  background: var(--secondary-dark);
+  color: var(--white);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: var(--font-size-s);
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+
+.sim-floater-trigger:hover {
+  opacity: 0.85;
+}
+
+.sim-floater-trigger i,
+.sim-floater-trigger .Icon {
+  color: var(--white) !important;
+  filter: brightness(10);
+}
+
+/* ── UPLOAD ZONE ─────────────────────────────── */
+.upload-zone {
+  padding: 16px;
+  border: 2px dashed var(--secondary-light);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.upload-zone:hover {
+  border-color: var(--primary);
+}
+
+/* ── DOCUMENT CHIPS ──────────────────────────── */
+.q-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.doc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-subtle);
+  background: var(--secondary-lightest);
+  border: 1px solid var(--secondary-light);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.doc-add {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── MEDICAL NECESSITY CRITERIA ─────────────── */
+.mn-criteria-item {
+  margin-bottom: 0;
+}
+
+.mn-criteria-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.mn-criteria-text {
+  flex: 1;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* ── ACTIVITY LOG ────────────────────────────── */
+.activity-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-dot.system { background: var(--text-subtle); }
+.activity-dot.ai     { background: var(--accent2); }
+.activity-dot.user   { background: var(--primary); }
+
+/* ── PHONE CARD ──────────────────────────────── */
+.ct-phone-number {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ── CENTER PANEL (legacy step panels use this) ─ */
+.center-panel {
+  /* no width constraint — inherits from bubble */
+}
+
+/* ── AI PROCESSING ───────────────────────────── */
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.cp-ai-orb {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent2-lightest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--accent2);
+  flex-shrink: 0;
+}
+
+.cp-ai-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent2);
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* ── PREVIOUS ROUNDS ─────────────────────────── */
+.prev-rounds-text {
+  flex: 1;
+  text-align: left;
+}
+
+/* ── STEP WIZARD ─────────────────────────────── */
+.step-wizard {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-40);
+}
+
+/* Future steps — dimmed, non-interactive */
+.step-row--future {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Left column: dot + vertical connecting line */
+.step-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+  flex-shrink: 0;
+  align-self: stretch;
+  padding-top: 2px; /* align icon with text cap-height */
+}
+
+/* Step indicator icon wrapper — centres the 16px MDS Icon */
+.step-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+/* Vertical line connecting icon to next step */
+.step-line {
+  width: 1px;
+  flex: 1;
+  min-height: 12px;
+  background: var(--secondary-light);
+  margin-top: 3px;
+}
+
+/* Right column: header + content */
+.step-right {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 16px; /* consistent 16px gap before next step */
+}
+
+.step-row--future .step-right {
+  padding-bottom: 8px; /* future steps need less gap */
+}
+
+/* Step header row — label + chevron */
+.step-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-40); /* slightly more space above content (16px) */
+}
+
+.step-header-row--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.step-header-row--clickable:hover {
+  opacity: 0.8;
+}
+
+/* Content area below the step header */
+.step-content {
+  animation: feedItemIn 0.2s ease-out both;
+}
+
+/* ── ELIGIBILITY OPTION CARDS ────────────────── */
+.elig-option-card {
+  border: 1px solid var(--secondary-light);
+  border-radius: 4px;
+  padding: var(--spacing-40) 20px;
+  cursor: pointer;
+  background: var(--white);
+  transition: border-color 0.15s;
+}
+
+.elig-option-card:hover {
+  border-color: var(--secondary);
+}
+
+.elig-option-card--selected {
+  border: 2px solid var(--primary);
+}
+
+/* ── ELIGIBILITY WIZARD ──────────────────────── */
+.elig-card-wrap {
+  cursor: pointer;
+}
+
+/* Two explicit flex columns, matching Figma layout */
+.elig-detail-grid {
+  display: flex;
+  gap: 16px;                      /* 16px between left and right column */
+  margin-top: var(--spacing-30);
+  margin-left: 24px;              /* indent under radio button */
+}
+
+.elig-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;                       /* 4px between each label-value row */
+}
+
+/* Each label-value pair: fixed-width label + value on same line */
+.elig-detail-row {
+  display: flex;
+  align-items: center;
+  min-height: 16px;
+}
+
+.elig-detail-label {
+  width: 96px;
+  min-width: 96px;
+  flex-shrink: 0;
+  font-size: var(--font-size-s);
+  line-height: var(--font-height-s);
+  color: var(--text-subtle);
+}
+
+.elig-detail-label--wide {
+  width: 117px;
+  min-width: 117px;
+}
+
+.elig-radio-indent {
+  margin-left: 24px;
+}
+
+/* Medication detail grid — same tight row pattern */
+.elig-detail-grid-sm {
+  display: flex;
+  gap: 16px;
+  margin-top: var(--spacing-30);
+}
+
+.elig-detail-grid-sm .elig-detail-col {
+  gap: 4px;
+}
