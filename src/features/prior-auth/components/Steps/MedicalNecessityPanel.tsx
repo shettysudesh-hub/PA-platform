@@ -109,7 +109,7 @@ export default function MedicalNecessityPanel({
       {/* ── Status banner ────────────────────────────────────────────────── */}
       <Message
         appearance={hasIssues ? 'warning' : 'success'}
-        title={
+        description={
           hasIssues
             ? 'Review Required — Some criteria not met'
             : 'All medical necessity criteria met'

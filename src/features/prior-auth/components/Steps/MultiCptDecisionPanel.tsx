@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Button, Text, Card, Badge, StatusHint, Icon } from '@innovaccer/design-system';
-import AIProcessingPanel from '../shared/AIProcessingPanel';
 import type { CptStatus as DecisionStatus } from '../shared/SimulatorFloater';
 import type { MultiCptOrder } from '../../data/mockData';
 
@@ -133,7 +132,13 @@ export default function MultiCptDecisionPanel({ order, statuses }: Props) {
   }, []);
 
   if (!thinkDone) {
-    return <AIProcessingPanel message={THINKING_STEPS[thinkStep]} />;
+    return (
+      <div className="center-panel">
+        <Card shadow="none" className="p-5">
+          <Text appearance="subtle">{THINKING_STEPS[thinkStep]}</Text>
+        </Card>
+      </div>
+    );
   }
 
   // ── Overall summary counts ────────────────────────────────────────────────

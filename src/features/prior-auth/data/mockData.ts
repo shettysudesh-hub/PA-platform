@@ -382,6 +382,59 @@ export const ORDER_MULTI_CPT: MultiCptOrder = {
   ],
 };
 
+// ── PA Required Check results ───────────────────────────────────────────────
+export interface PaCheckResult {
+  cpt: string;
+  title: string;
+  icd10: string;
+  icd10Desc: string;
+  paRequired: boolean;
+  reason: string;
+  payerRule: string;
+}
+
+export const PA_CHECK_SINGLE: PaCheckResult[] = [
+  {
+    cpt: '70553',
+    title: 'MRI Brain w/ & w/o Contrast',
+    icd10: 'G43.909',
+    icd10Desc: 'Migraine, unspecified',
+    paRequired: true,
+    reason: 'Advanced imaging requires prior authorization per plan policy',
+    payerRule: 'Aetna Policy AIM-2025-MRI',
+  },
+];
+
+export const PA_CHECK_MULTI: PaCheckResult[] = [
+  {
+    cpt: '74178',
+    title: 'CT Abdomen & Pelvis with Contrast',
+    icd10: 'R10.9',
+    icd10Desc: 'Unspecified abdominal pain',
+    paRequired: true,
+    reason: 'CT with contrast requires PA for non-emergency indication',
+    payerRule: 'UHC Policy RAD-2025-CT',
+  },
+  {
+    cpt: '71260',
+    title: 'CT Chest with Contrast',
+    icd10: 'R91.8',
+    icd10Desc: 'Other nonspecific abnormal finding of lung',
+    paRequired: true,
+    reason: 'CT with contrast requires PA for non-emergency indication',
+    payerRule: 'UHC Policy RAD-2025-CT',
+  },
+  {
+    cpt: '70553',
+    title: 'MRI Brain w/ & w/o Contrast',
+    icd10: 'G43.909',
+    icd10Desc: 'Migraine, unspecified',
+    paRequired: true,
+    reason: 'Advanced imaging requires prior authorization per carve-out',
+    payerRule: 'NeuroCarve Policy NCI-2025-MRI',
+  },
+];
+
 export const WORKLIST: Order[] = [
   { ...ORDER_RX, status: 'New', daysOpen: 1 },
   { ...ORDER_MED, status: 'New', daysOpen: 0 },

@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
-import { PageHeader, Badge, Button, Text, Icon } from '@innovaccer/design-system';
+import { useState, useCallback, useEffect } from 'react';
+import { PageHeader, Badge, Button, Text, Icon, Card } from '@innovaccer/design-system';
 import type { CollapsedSummary } from './CollapsedSection';
 import EligibilityPanel from '../Steps/EligibilityPanel';
 import QuestionnairePanel from '../Steps/QuestionnairePanel';
 import MedicalNecessityPanel from '../Steps/MedicalNecessityPanel';
+import PaRequiredCheckPanel from '../Steps/PaRequiredCheckPanel';
 import DecisionPanel from '../Steps/DecisionPanel';
 import SubmissionRoutingPanel from '../Steps/SubmissionRoutingPanel';
 import MultiCptDecisionPanel from '../Steps/MultiCptDecisionPanel';
@@ -43,9 +44,33 @@ const SECTION_LABELS: Record<string, string> = {
   eligibility: 'Eligibility Investigation',
   pa_initiation: 'Payer Questionnaire',
   medical_necessity: 'Medical Necessity Review',
+  pa_check: 'PA Required Check',
   routing: 'Submission Routing',
   decision: 'Decision',
 };
+
+// ── Submission loader — same system loader pattern as questionnaire/packet ────
+
+function SubmissionLoader() {
+  const [stage, setStage] = useState<'transmitting' | 'waiting'>('transmitting');
+
+  useEffect(() => {
+    const t = setTimeout(() => setStage('waiting'), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="center-panel">
+      <Card shadow="none" className="p-5">
+        <Text appearance="subtle">
+          {stage === 'transmitting'
+            ? 'Transmitting authorization request to payer…'
+            : 'Waiting for payer acknowledgement…'}
+        </Text>
+      </Card>
+    </div>
+  );
+}
 
 // ── FeedView ─────────────────────────────────────────────────────────────────
 
@@ -55,8 +80,8 @@ export default function FeedView({ order, onBack }: Props) {
   const sectionIds = isRx
     ? ['eligibility', 'pa_initiation', 'decision']
     : isMulti
-      ? ['eligibility', 'medical_necessity', 'routing', 'decision']
-      : ['eligibility', 'medical_necessity', 'decision'];
+      ? ['eligibility', 'pa_check', 'medical_necessity', 'routing', 'decision']
+      : ['eligibility', 'pa_check', 'medical_necessity', 'decision'];
 
   const [phase, setPhase] = useState('eligibility');
   const [completed, setCompleted] = useState<Record<string, boolean>>({});
@@ -78,6 +103,8 @@ export default function FeedView({ order, onBack }: Props) {
   const [extraDocs, setExtraDocs] = useState<{ name: string; ext: string; auto: boolean }[]>([]);
   // Whether the packet panel is in read-only mode (viewing after submission)
   const [packetReadOnly, setPacketReadOnly] = useState(false);
+  // Submission in progress — shows loader before decision appears
+  const [submitting, setSubmitting] = useState(false);
 
   const updateCptStatus = useCallback((index: number, status: CptStatus) => {
     setMultiStatuses((prev) => prev.map((s, i) => (i === index ? status : s)));
@@ -119,7 +146,7 @@ export default function FeedView({ order, onBack }: Props) {
       if (isRx) {
         completeSection('eligibility', summary, 'pa_initiation');
       } else {
-        completeSection('eligibility', summary, 'medical_necessity');
+        completeSection('eligibility', summary, 'pa_check');
       }
     },
     [isRx, insActive, order, completeSection],
@@ -133,7 +160,17 @@ export default function FeedView({ order, onBack }: Props) {
       line2: `${ins.payer} · Member ${ins.memberId} · ${ins.planType}`,
       status: 'success',
     };
-    completeSection('eligibility', summary, 'medical_necessity');
+    completeSection('eligibility', summary, 'pa_check');
+  }, [order, isMulti, completeSection]);
+
+  const handlePaCheckComplete = useCallback(() => {
+    const cptCount = isMulti ? (order as MultiCptOrder).cpts.length : 1;
+    const summary: CollapsedSummary = {
+      line1: `PA Required · ${cptCount} procedure${cptCount > 1 ? 's' : ''}`,
+      line2: `Verified via Availity · ${order.patient.insurance.payer}`,
+      status: 'warning',
+    };
+    completeSection('pa_check', summary, 'medical_necessity');
   }, [order, isMulti, completeSection]);
 
   // ── Open packet panel in loading state, then reveal after 3.5s ───────────
@@ -166,7 +203,7 @@ export default function FeedView({ order, onBack }: Props) {
     setPanelOpen(false);
     setPacketSubmitted(true);
 
-    // Now mark the step that was pending review as complete
+    // Mark the preceding step as complete
     if (isRx) {
       const aiCount = PBM_QUESTIONS.filter((q) => q.ai).length;
       const manualCount = PBM_QUESTIONS.length - aiCount;
@@ -178,7 +215,6 @@ export default function FeedView({ order, onBack }: Props) {
       setCompleted((p) => ({ ...p, pa_initiation: true }));
       setStepOutcomes((p) => ({ ...p, pa_initiation: summary }));
     } else {
-      // medical or multi — complete medical_necessity
       const flatLeaves = (items: Criterion[]): Criterion[] =>
         items.flatMap((c) => (c.children?.length ? flatLeaves(c.children) : [c]));
       const leaves = flatLeaves(MED_NECESSITY.criteria);
@@ -194,7 +230,12 @@ export default function FeedView({ order, onBack }: Props) {
       setStepOutcomes((p) => ({ ...p, medical_necessity: summary }));
     }
 
+    // Move to decision phase but show submission loader first
     setPhase(isMulti ? 'routing' : 'decision');
+    if (!isMulti) {
+      setSubmitting(true);
+      setTimeout(() => setSubmitting(false), 3500);
+    }
   }, [isMulti, isRx, pendingMedAllMet]);
 
   const handleRoutingSubmit = useCallback(() => {
@@ -205,6 +246,8 @@ export default function FeedView({ order, onBack }: Props) {
       status: 'success',
     };
     completeSection('routing', summary, 'decision');
+    setSubmitting(true);
+    setTimeout(() => setSubmitting(false), 3500);
   }, [order, completeSection]);
 
   const handleSimulate = useCallback((outcome: string) => {
@@ -270,6 +313,14 @@ export default function FeedView({ order, onBack }: Props) {
           />
         );
 
+      case 'pa_check':
+        return (
+          <PaRequiredCheckPanel
+            order={order}
+            onComplete={completed['pa_check'] ? () => {} : handlePaCheckComplete}
+          />
+        );
+
       case 'pa_initiation':
         return (
           <QuestionnairePanel
@@ -297,6 +348,9 @@ export default function FeedView({ order, onBack }: Props) {
         );
 
       case 'decision':
+        if (submitting) {
+          return <SubmissionLoader />;
+        }
         if (isMulti) {
           return <MultiCptDecisionPanel order={order as MultiCptOrder} statuses={multiStatuses} />;
         }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Button,
   LinkButton,
@@ -163,6 +163,29 @@ export default function EligibilityPanel({
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
 
   const isRx = order.type === 'prescription';
+  const advancedRef = useRef(false);
+
+  // ── Medical auto-verify: start verification on mount, auto-advance if active ──
+  const startMedicalVerification = useCallback(() => {
+    queueMicrotask(() => setInsVerify('verifying'));
+    setTimeout(() => {
+      setInsVerify('verified');
+      if (insActive) {
+        setTimeout(() => {
+          if (!advancedRef.current) {
+            advancedRef.current = true;
+            onContinue(0);
+          }
+        }, 800);
+      }
+    }, 2000);
+  }, [insActive, onContinue]);
+
+  useEffect(() => {
+    if (!isRx && !isCompleted && !locked) {
+      startMedicalVerification();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When the step is completed (moved to next step), always show the confirmed
   // summary regardless of internal activeStep — fixes the medical case where
@@ -206,24 +229,6 @@ export default function EligibilityPanel({
       ? { border: '2px solid var(--primary)' }
       : { border: '1px solid var(--secondary-light)' };
 
-  // ── Mock API — 1.5 s delay simulates eligibility check ───────────────────
-  // After verification: auto-advance if active, else stay and show alert.
-
-  const verifyInsurance = () => {
-    setInsVerify('verifying');
-    setTimeout(() => {
-      setInsVerify('verified');
-      if (insActive) {
-        // Active → skip the extra click, jump straight to next step
-        setTimeout(() => {
-          if (isRx) setActiveStep('medication');
-          else onContinue(0);
-        }, 350);
-      }
-      // Inactive → stay on insurance step so user sees the alert and decides
-    }, 1500);
-  };
-
   const verifyMedication = () => {
     setMedVerify('verifying');
     setTimeout(() => {
@@ -240,7 +245,12 @@ export default function EligibilityPanel({
     setTimeout(() => {
       setIsSyncing(false);
       setSyncedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      setInsVerify('idle'); // fresh data — user must re-verify
+      setInsVerify('idle');
+      if (!isRx) {
+        // Medical: auto-restart verification after sync
+        advancedRef.current = false;
+        startMedicalVerification();
+      }
     }, 1500);
   };
 
@@ -285,82 +295,140 @@ export default function EligibilityPanel({
 
         <div>
           <Text appearance="subtle" className="d-block mb-2">
-            1. Select Insurance
+            {isRx ? '1. Select Insurance' : '1. Insurance Details'}
           </Text>
 
           {/* ── SELECTION MODE (idle / verifying) ──────────────────────────── */}
           {activeStep === 'insurance' && !forceConfirmed && (
             <>
-              {/* Subtext + always-visible Sync from EHR */}
-              <div className="d-flex align-items-center justify-content-between mb-6">
-                <Text size="small" appearance="subtle">
-                  {MOCK_INSURANCES.length > 1
-                    ? 'Multiple plans on file — select one and verify coverage to continue.'
-                    : 'One insurance plan found — verify coverage to continue.'}
-                  {syncedAt && <span style={{ marginLeft: 6 }}>· Synced at {syncedAt}</span>}
-                </Text>
-                <LinkButton
-                  size="tiny"
-                  icon="sync"
-                  iconAlign="left"
-                  disabled={isSyncing}
-                  onClick={handleSyncFromEHR}
-                >
-                  {isSyncing ? 'Syncing…' : 'Sync from EHR'}
-                </LinkButton>
-              </div>
+              {isRx ? (
+                /* ── Rx: multi-plan selection + Continue button ───────────── */
+                <>
+                  <Text size="small" appearance="subtle" className="d-block mb-6">
+                    {MOCK_INSURANCES.length > 1
+                      ? 'Multiple plans on file — select one to continue.'
+                      : 'One insurance plan found.'}
+                  </Text>
 
-              {/* Inactive alert — shown after verification fails */}
-              {insVerify === 'verified' && !insActive && (
-                <Message
-                  appearance="alert"
-                  title="Insurance Inactive or Not Found"
-                  description="We couldn't verify active coverage for this member. Update the insurance details in your EHR, then sync here to pull the latest data and try again."
-                  className="mb-5"
-                />
-              )}
+                  {!insActive && (
+                    <Message
+                      appearance="alert"
+                      title="Insurance Inactive or Not Found"
+                      description="We couldn't verify active coverage for this member. Update insurance details in your EHR, then sync here to pull latest data and try again."
+                      className="mb-5"
+                    />
+                  )}
 
-              <div className="d-flex flex-column mb-6" style={{ gap: 'var(--spacing-40)' }}>
-                {MOCK_INSURANCES.map((ins, i) => (
-                  <div
-                    key={i}
-                    className="elig-card-wrap"
-                    onClick={() => insVerify === 'idle' && setSelectedInsIdx(i)}
-                  >
-                    <Card
-                      shadow="none"
-                      className="p-5"
-                      style={selectionBorder(selectedInsIdx === i)}
-                    >
-                      <div className="mb-5">
-                        <Radio
-                          name="insurance-select"
-                          value={String(i)}
-                          checked={selectedInsIdx === i}
-                          onChange={() => setSelectedInsIdx(i)}
-                          label={ins.payer}
-                        />
+                  <div className="d-flex flex-column mb-6" style={{ gap: 'var(--spacing-40)' }}>
+                    {MOCK_INSURANCES.map((ins, i) => (
+                      <div key={i} className="elig-card-wrap" onClick={() => setSelectedInsIdx(i)}>
+                        <Card
+                          shadow="none"
+                          className="p-5"
+                          style={selectionBorder(selectedInsIdx === i)}
+                        >
+                          <div className="d-flex align-items-center justify-content-between mb-5">
+                            <Radio
+                              name="insurance-select"
+                              value={String(i)}
+                              checked={selectedInsIdx === i}
+                              onChange={() => setSelectedInsIdx(i)}
+                              label={ins.payer}
+                            />
+                            {insActive ? (
+                              <StatusHint appearance="success">Active</StatusHint>
+                            ) : (
+                              <StatusHint appearance="alert">Inactive</StatusHint>
+                            )}
+                          </div>
+                          <InsDetailGrid ins={ins} />
+                        </Card>
                       </div>
-                      <InsDetailGrid ins={ins} />
-                    </Card>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* Verify Coverage — hidden only when inactive (user must sync first) */}
-              {!(insVerify === 'verified' && !insActive) && (
-                <Button
-                  size="tiny"
-                  appearance="primary"
-                  disabled={insVerify === 'verifying'}
-                  onClick={
-                    insVerify === 'verified'
-                      ? () => (isRx ? setActiveStep('medication') : onContinue(0))
-                      : verifyInsurance
-                  }
-                >
-                  {insVerify === 'verifying' ? 'Verifying…' : 'Verify Coverage'}
-                </Button>
+                  {insActive && (
+                    <Button
+                      size="tiny"
+                      appearance="primary"
+                      onClick={() => setActiveStep('medication')}
+                    >
+                      Continue
+                    </Button>
+                  )}
+                </>
+              ) : (
+                /* ── Medical: auto-verify, single result ─────────────────── */
+                <>
+                  {/* Loading state */}
+                  {insVerify !== 'verified' && (
+                    <>
+                      <Text size="small" appearance="subtle" className="d-block mb-4">
+                        Verified from member records
+                      </Text>
+                      <Card shadow="none" className="p-5">
+                        <Text appearance="subtle">Verifying insurance details…</Text>
+                      </Card>
+                    </>
+                  )}
+
+                  {/* Active result */}
+                  {insVerify === 'verified' && insActive && (
+                    <>
+                      <Text size="small" appearance="subtle" className="d-block mb-4">
+                        Verified from member records
+                      </Text>
+                      <Card
+                        shadow="none"
+                        className="p-5"
+                        style={{ border: '1px solid var(--secondary-light)' }}
+                      >
+                        <div className="d-flex align-items-center justify-content-between mb-5">
+                          <Text weight="medium">{selectedIns.payer}</Text>
+                          <StatusHint appearance="success">Active Insurance</StatusHint>
+                        </div>
+                        <InsDetailGrid ins={selectedIns} />
+                      </Card>
+                    </>
+                  )}
+
+                  {/* Inactive result — blocks progression */}
+                  {insVerify === 'verified' && !insActive && (
+                    <>
+                      <div className="d-flex align-items-center justify-content-between mb-4">
+                        <Text size="small" appearance="subtle">
+                          Verified from member records
+                        </Text>
+                        <LinkButton
+                          size="tiny"
+                          icon="sync"
+                          iconAlign="left"
+                          disabled={isSyncing}
+                          onClick={handleSyncFromEHR}
+                        >
+                          {isSyncing ? 'Syncing…' : 'Sync from EHR'}
+                        </LinkButton>
+                      </div>
+                      <Message
+                        appearance="alert"
+                        title="Insurance Inactive or Not Found"
+                        description="We couldn't verify active coverage for this member. Update the insurance details in your EHR, then sync here to pull the latest data and try again."
+                        className="mb-5"
+                      />
+                      <Card
+                        shadow="none"
+                        className="p-5"
+                        style={{ border: '1px solid var(--secondary-light)' }}
+                      >
+                        <div className="d-flex align-items-center justify-content-between mb-5">
+                          <Text weight="medium">{selectedIns.payer}</Text>
+                          <StatusHint appearance="alert">Inactive</StatusHint>
+                        </div>
+                        <InsDetailGrid ins={selectedIns} />
+                      </Card>
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
@@ -371,20 +439,24 @@ export default function EligibilityPanel({
               <>
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <Text size="small" appearance="subtle">
-                    {MOCK_INSURANCES.length > 1
-                      ? 'Multiple plans on file — select one and verify coverage to continue.'
-                      : 'One insurance plan found — verify coverage to continue.'}
+                    {isRx
+                      ? MOCK_INSURANCES.length > 1
+                        ? 'Multiple plans on file — select one and verify coverage to continue.'
+                        : 'One insurance plan found — verify coverage to continue.'
+                      : 'Verified from member records'}
                     {syncedAt && <span style={{ marginLeft: 6 }}>· Synced at {syncedAt}</span>}
                   </Text>
-                  <LinkButton
-                    size="tiny"
-                    icon="sync"
-                    iconAlign="left"
-                    disabled={isSyncing}
-                    onClick={handleSyncFromEHR}
-                  >
-                    {isSyncing ? 'Syncing…' : 'Sync from EHR'}
-                  </LinkButton>
+                  {isRx && (
+                    <LinkButton
+                      size="tiny"
+                      icon="sync"
+                      iconAlign="left"
+                      disabled={isSyncing}
+                      onClick={handleSyncFromEHR}
+                    >
+                      {isSyncing ? 'Syncing…' : 'Sync from EHR'}
+                    </LinkButton>
+                  )}
                 </div>
                 <div className="mb-5">
                   <Card
@@ -403,7 +475,7 @@ export default function EligibilityPanel({
                     <InsDetailGrid ins={selectedIns} />
                   </Card>
                 </div>
-                {!locked && (
+                {!locked && isRx && (
                   <Button size="tiny" appearance="basic" onClick={handleUpdateInsurance}>
                     Update Insurance
                   </Button>

@@ -14,6 +14,7 @@ import {
   Chip,
   Icon,
 } from '@innovaccer/design-system';
+import AIProcessingPanel from '../shared/AIProcessingPanel';
 
 // ── Single sparkle — the 16×16 one-star SVG from MDS ─────────────────────────
 function SingleSparkle({ size = 12 }: { size?: number }) {
@@ -204,18 +205,17 @@ export default function QuestionnairePanel({
   }, []);
 
   // ── Interim loading states ────────────────────────────────────────────────
-  if (loadState !== 'ready') {
+  if (loadState === 'fetching') {
     return (
       <div className="center-panel">
         <Card shadow="none" className="p-5">
-          <Text appearance="subtle">
-            {loadState === 'fetching'
-              ? 'Fetching questionnaire from payer…'
-              : 'AI is filling out the questionnaire…'}
-          </Text>
+          <Text appearance="subtle">Fetching questionnaire from payer…</Text>
         </Card>
       </div>
     );
+  }
+  if (loadState === 'filling') {
+    return <AIProcessingPanel message="Auto-filling questionnaire from EHR data…" />;
   }
 
   // ── Submitted / read-only state ───────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { Spinner, Text } from '@innovaccer/design-system';
+import { Text } from '@innovaccer/design-system';
 import { SaraSparkle } from '@innovaccer/design-system';
 
 interface Props {
@@ -12,22 +12,19 @@ export default function AIProcessingPanel({ message }: Props) {
         className="d-flex align-items-center p-6"
         style={{
           gap: 'var(--spacing-40)',
-          background: `linear-gradient(135deg, var(--accent2-lightest) 0%, var(--primary-lightest) 100%)`,
+          background: 'var(--white)',
           borderRadius: 8,
-          border: `1px solid var(--accent2-lighter)`,
+          border: '1px solid var(--secondary-light)',
         }}
       >
         <SaraSparkle size={32} state="short-processing" />
         <div>
-          <Text weight="strong" style={{ color: 'var(--accent2)' }}>
-            AI is working
-          </Text>
+          <Text weight="strong">AI is working</Text>
           <br />
           <Text size="small" appearance="subtle">
             {message}
           </Text>
         </div>
-        <Spinner size="small" appearance="primary" />
       </div>
     </div>
   );
